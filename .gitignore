@@ -1,0 +1,6 @@
+#Data files
+Crisis*
+*.zip
+*.pyc
+.*
+!.gitignore
