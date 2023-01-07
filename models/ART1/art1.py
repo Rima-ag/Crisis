@@ -7,7 +7,7 @@ class ART1():
     data clustering.
     https://www.emis.de/journals/GM/vol12nr3/popovici/popovici.pdf
     """
-    def __init__(n_features, n_clusters=2, rho=.7):
+    def __init__(self, n_features, n_clusters=2, rho=.7):
         self.rho = rho
         self.n_clusters = n_clusters
         self.W1_2 = np.ones((n_clusters, n_features))
@@ -17,14 +17,14 @@ class ART1():
     def predict(self, X):
         n_samples, n_features = X.shape
 
-        labels = np.zeros(n_samples)
+        labels = - np.ones(n_samples)
 
-        for sample in X:
+        for i, sample in enumerate(X):
             non_matching_nodes = []
             reseted_values = []
             explored_all_map = False
 
-            while True:
+            while labels[i] == -1:
                 # Forward
                 forward = np.dot(self.W1_2, sample.T)
 
