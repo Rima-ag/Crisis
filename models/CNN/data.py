@@ -8,6 +8,8 @@ from torchvision import transforms
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from PIL import Image
+import collections
+collections.Iterable = collections.abc.Iterable
 
 
 TRAIN_BATCH_SIZE = 64
@@ -37,7 +39,9 @@ class ImageMapper(Dataset):
         self.y = y
         self.transforms = transforms.Compose([
             transforms.ToTensor(),
+            transforms.ToPILImage(),
             transforms.Resize((256, 256)),
+            transforms.ToTensor(),
             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
             ]) 
 
@@ -69,9 +73,9 @@ def get_dataset(path = '../../CrisisMMD_v2.0/'):
     for crisis in glob.glob(os.path.join(path, 'annotations', '*')):
         df = pd.read_csv(crisis, sep = '\t')
         print(crisis)
-        df = preprocess_data(df)
+        df = preprocess_data(df, path)
 
-        train_size = 0.2
+        train_size = 0.7
         train_dataset=df.sample(frac=train_size,random_state=200)
         test_dataset=df.drop(train_dataset.index).reset_index(drop=True)
         train_dataset = train_dataset.reset_index(drop=True)

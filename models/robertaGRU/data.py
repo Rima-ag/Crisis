@@ -42,9 +42,9 @@ def get_dataset(path= './CrisisMMD_v2.0/'):
     for crisis in glob.glob(os.path.join('./CrisisMMD_v2.0/annotations/', '*')):
         df = pd.read_csv(crisis, sep = '\t')
         print(crisis)
-        df = preprocess_data(df)
+        df = preprocess_data(df, path)
 
-        train_size = 0.8
+        train_size = 0.7
         train_dataset=df.sample(frac=train_size,random_state=200)
         test_dataset=df.drop(train_dataset.index).reset_index(drop=True)
         train_dataset = train_dataset.reset_index(drop=True)

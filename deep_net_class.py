@@ -70,7 +70,7 @@ def train(epoch):
         loss = loss_fn(outputs, targets)
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data[0][0]), len(training_loader.dataset),
+                epoch, batch_idx * len(targets), len(training_loader.dataset),
                 100. * batch_idx / len(training_loader), loss.data.item()))
         
         loss.backward()
