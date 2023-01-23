@@ -39,6 +39,7 @@ class DataMapper(Dataset):
         image, _ = self.image_mapper[idx]
         return (image, text), label
 
+# Will read one dataset only, not enough resources to train and test on all the datasets
 def get_dataset(path = '../../CrisisMMD_v2.0/'):
 
     train_total = []

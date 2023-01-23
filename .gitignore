@@ -4,3 +4,4 @@ Crisis*
 *.pyc
 .*
 !.gitignore
+!.vscode

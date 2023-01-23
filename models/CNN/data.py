@@ -17,9 +17,20 @@ VALID_BATCH_SIZE = 64
 EPOCHS = 25
 LEARNING_RATE = 1e-03
 
-def preprocess_image(url, transforms):
+def _preprocess_image(url, transforms):
+    """
+    Parameters:
+    ----------
+    url : str
+         image path on disk
+
+    transformes : torchvision.transforms
+          transformations to apply to image
+    """
     image = Image.open(url)
     image = np.array(image)
+
+    # Transform gray-scale image to rgb
     if len(image.shape) == 2:
         tmp = np.zeros((3, image.shape[0], image.shape[1]))
         tmp[0] = image
@@ -49,10 +60,8 @@ class ImageMapper(Dataset):
         return len(self.x)
 
     def __getitem__(self, idx):
-        image = preprocess_image(self.x[idx], self.transforms)
+        image = _preprocess_image(self.x[idx], self.transforms)
         return image, self.y[idx]
-
-
 
 def preprocess_data(df, path):
     df = df[['image_path', 'image_info']]

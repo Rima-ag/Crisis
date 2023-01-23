@@ -1,7 +1,11 @@
-from CNN.model import CNN
-from robertaGRU.model import RobertaGRU
 import torch
 import torch.nn as nn
+
+import sys
+sys.path.insert(0, '/home/infres/ralghoss-21/Crisis/models/CNN')
+sys.path.insert(0, '/home/infres/ralghoss-21/Crisis/models/robertaGRU')
+from CNN.model import CNN
+from robertaGRU.model import RobertaGRU
 
 class MultiModal(torch.nn.Module):
     def __init__(self):

@@ -13,5 +13,5 @@ class CNN(torch.nn.Module):
           nn.Linear(64, 2))
 
 
-    def forward(self, batch_data):
+    def forward(self, batch_data, device):
         return self.resnet(batch_data)

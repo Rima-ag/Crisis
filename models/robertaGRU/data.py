@@ -34,6 +34,7 @@ def preprocess_data(df, path):
 
     return df
 
+# Will read one dataset only, not enough resources to train and test on all the datasets
 def get_dataset(path= './CrisisMMD_v2.0/'):
 
     train_total = []

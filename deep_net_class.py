@@ -1,69 +1,60 @@
 import argparse
-import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
-from tqdm import tqdm
 import numpy as np
 from sklearn import metrics
 
+def loss_fn(outputs, targets):
+    fn = torch.nn.CrossEntropyLoss(reduction='mean')
+    return fn(outputs, targets)
+
 # Training settings
-parser = argparse.ArgumentParser(description='RecVis A3 training script')
-parser.add_argument('--data', type=str, default='bird_dataset', metavar='D',
-                    help="folder where data is located. train_images/ and val_images/ need to be found in the folder")
-parser.add_argument('--batch-size', type=int, default=64, metavar='B',
-                    help='input batch size for training (default: 64)')
-parser.add_argument('--epochs', type=int, default=10, metavar='N',
-                    help='number of epochs to train (default: 10)')
-parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
-                    help='learning rate (default: 0.01)')
-parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
-                    help='SGD momentum (default: 0.5)')
+parser = argparse.ArgumentParser(description='Crisis Training script')
+parser.add_argument('--model', type=str, default='MM', metavar='M',
+                    help='Model to train (default: MM)')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
+parser.add_argument('--epoch', type=int, default=10, metavar='E',
+                    help='number of epochs to train (default: 10)')
 parser.add_argument('--log-interval', type=int, default=1, metavar='N',
                     help='how many batches to wait before logging training status')
-parser.add_argument('--experiment', type=str, default='experiment', metavar='E',
-                    help='folder where experiment outputs are located.')
+parser.add_argument('--lr', type=float, default=0.01, metavar='LR',
+                    help='learning rate (default: 0.01)')
+parser.add_argument('--f1', default=False, help='show f1 micro and macro score')
+
 args = parser.parse_args()
-use_cuda = torch.cuda.is_available()
+assert args.model in ['MM', 'CNN', 'RNN']
+
+if args.model == 'MM':
+    import MultiModal.data as data
+    import MultiModal.model as model
+    from model import MultiModal as TheModel
+elif args.model == 'CNN':
+    import CNN.data as data
+    import CNN.model as model
+    from model import CNN as TheModel
+else:
+    import robertaGRU.data as data
+    import robertaGRU.model as model
+    from model import RobertaGRU as TheModel
+
 torch.manual_seed(args.seed)
-
-# Create experiment folder
-if not os.path.isdir(args.experiment):
-    os.makedirs(args.experiment)
-
-import models.MultiModal.data as data
-import models.MultiModal.model as model
-# Data initialization and loading
-# from data import train_dataset, valid_dataset, my_vocab, test_dataset
-from data import LEARNING_RATE, EPOCHS
-training_loader, testing_loader = data.get_dataset('./CrisisMMD_v2.0/')
-
-# Neural network and optimizer
-# We define neural net in model.py so that it can be reused by the evaluate.py script
-
+use_cuda = torch.cuda.is_available()
 device = 'cuda' if use_cuda else 'cpu'
-model = model.MultiModal()
+model = TheModel()
 model = model.float()
 print(model)
 model.to(device)
 
-# loss_fn = nn.CrossEntropyLoss()
-def loss_fn(outputs, targets):
-    fn = torch.nn.CrossEntropyLoss(reduction='mean')
-    return fn(outputs, targets)
-    # targets = targets.type(torch.float32)
-    # return torch.nn.BCEWithLogitsLoss()(outputs, targets.view(targets.size()[0], 1))
-
-optimizer = torch.optim.Adam(params =  model.parameters(), lr=LEARNING_RATE)
+optimizer = torch.optim.Adam(params = model.parameters(), lr=args.lr)
+training_loader, testing_loader = data.get_dataset('./CrisisMMD_v2.0/')
 
 def train(epoch):
     model.train()
     for batch_idx, data in enumerate(training_loader):
         (features, targets) = data
-        # features = list(features)
         optimizer.zero_grad()
         outputs = model(features, device)
         
@@ -76,7 +67,7 @@ def train(epoch):
         loss.backward()
         optimizer.step()
 
-def validation(epoch ,loader):
+def validation(loader):
     model.eval()
     fin_targets=[]
     fin_outputs=[]
@@ -85,7 +76,6 @@ def validation(epoch ,loader):
     with torch.no_grad():
         for _, data in enumerate(loader):
             (features, targets) = data
-            # features = list(features)
             outputs = model(features, device)
             fin_targets.extend(targets.cpu().detach().numpy().tolist())
             fin_outputs.extend(torch.sigmoid(outputs).cpu().detach().numpy().tolist())
@@ -102,16 +92,15 @@ def validation(epoch ,loader):
 
     return fin_outputs, fin_targets
 
-for epoch in range(EPOCHS):
+for epoch in range(args.epoch):
     train(epoch)
     for loader in [training_loader, testing_loader]:
-        outputs, targets = validation(1, loader)
-        # outputs = np.array(outputs) >= 0.5
-        # accuracy = metrics.accuracy_score(targets, outputs)
-        # f1_score_micro = metrics.f1_score(targets, outputs, average='micro')
-        # f1_score_macro = metrics.f1_score(targets, outputs, average='macro')
-        # print(f"Accuracy Score = {accuracy}")
-        # print(f"F1 Score (Micro) = {f1_score_micro}")
-        # print(f"F1 Score (Macro) = {f1_score_macro}")
+        outputs, targets = validation(loader)
+        if args.f1:
+            outputs = np.array(outputs) >= 0.5
+            f1_score_micro = metrics.f1_score(targets, outputs, average='micro')
+            f1_score_macro = metrics.f1_score(targets, outputs, average='macro')
+            print(f"F1 Score (Micro) = {f1_score_micro}")
+            print(f"F1 Score (Macro) = {f1_score_macro}")
 
 

@@ -17,7 +17,7 @@ class RobertaGRU(torch.nn.Module):
         return torch.zeros((1, 124, self.hidden_units)).to(device)
 
     def forward(self, batch_data, device):
-        _input = torchtext.functional.to_tensor(self.pre(batch_data), padding_value = 1)
+        _input = torchtext.functional.to_tensor(self.pre(list(batch_data)), padding_value = 1)
         embs = self.emb(_input)
         
         self.hidden = self.initialize_hidden_state(device)

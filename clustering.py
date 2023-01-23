@@ -1,6 +1,7 @@
-import models.ART1 as art1 
+import ART1 as art1
 from art1.data import feature_as_cluster
 from art1.model import ART1
+import numpy as np
 
 paths = ['./california_wildfires_final_data.tsv', './hurricane_harvey_final_data.tsv',\
           './srilanka_floods_final_data.tsv', './hurricane_maria_final_data.tsv',\
