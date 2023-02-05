@@ -10,8 +10,8 @@ class ART1():
     def __init__(self, n_features, n_clusters=2, rho=.7):
         self.rho = rho
         self.n_clusters = n_clusters
-        self.W1_2 = np.ones((n_clusters, n_features))
-        self.W2_1 = self.W1_2.T * (1 / (1 + n_features))
+        self.W2_1 = np.ones((n_clusters, n_features))
+        self.W1_2 = self.W2_1.T * (1 / (1 + n_features))
 
 
     def predict(self, X):
@@ -26,7 +26,7 @@ class ART1():
 
             while labels[i] == -1:
                 # Forward
-                forward = np.dot(self.W1_2, sample.T)
+                forward = np.dot(self.W1_2.T, sample)
 
                 forward[non_matching_nodes] = -np.inf # Simulate disabling node
                 closest_map_node = forward.argmax()
@@ -35,7 +35,7 @@ class ART1():
                 expected_output = np.zeros(forward.size)
                 expected_output[closest_map_node] = 1
 
-                backward = np.dot(self.W2_1, expected_output)
+                backward = np.dot(self.W2_1.T, expected_output)
 
                 min_sample = np.multiply(sample, backward) # Min(sample, backward) element-wise in binary setting
 
@@ -53,9 +53,9 @@ class ART1():
 
                 if not reset:
                     if not explored_all_map:
-                        self.W2_1[:, closest_map_node] *= min_sample
-                        self.W1_2[closest_map_node, :] = self.W2_1[:, closest_map_node] / (
-                            .5 + np.linalg.norm(self.W2_1[:, closest_map_node])
+                        self.W2_1[closest_map_node, :] *= min_sample
+                        self.W1_2[:, closest_map_node] = self.W2_1[closest_map_node, :] / (
+                            .5 + np.linalg.norm(self.W2_1[closest_map_node, :])
                         )
                     else:
                         closest_map_node = max(reseted_values)[1]
